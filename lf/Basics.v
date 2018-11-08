@@ -1209,15 +1209,6 @@ Proof.
 (** Now state and prove a theorem [negation_fn_applied_twice] similar
     to the previous one but where the second hypothesis says that the
     function [f] has the property that [f x = negb x].*)
-Theorem negation_fn_applied_twice :
-  forall (f : bool -> bool),
-  (forall (x : bool), f x = negb x) ->
-  forall (b : bool), f (f b) = b.
-Proof.
-intros. destruct b.
-- rewrite -> H. simpl. rewrite -> H. reflexivity.
-- rewrite -> H. simpl. rewrite -> H. reflexivity.
-Qed.
 
 (* FILL IN HERE *)
 (* The [Import] statement on the next line tells Coq to use the

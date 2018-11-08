@@ -1,0 +1,4 @@
+{
+    "coqtop.binPath": "/usr/local/bin/",
+    "coq.editor.indentAfterBullet": "indent",
+}

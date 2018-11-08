@@ -63,7 +63,8 @@ Theorem silly2a : forall (n m : nat),
      [n] = [m].
 Proof.
   intros n m eq1 eq2.
-  apply eq2. apply eq1.  Qed.
+  apply eq2. apply eq1.
+Qed.
 
 (** **** Exercise: 2 stars, optional (silly_ex)  *)
 (** Complete the following proof without using [simpl]. *)
@@ -73,7 +74,9 @@ Theorem silly_ex :
      oddb 3 = true ->
      evenb 4 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n H. unfold evenb. reflexivity.
+Qed.
+
 (** [] *)
 
 (** To use the [apply] tactic, the (conclusion of the) fact
@@ -105,7 +108,8 @@ Theorem rev_exercise1 : forall (l l' : list nat),
      l = rev l' ->
      l' = rev l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l l' H. rewrite -> H. symmetry. apply rev_involutive.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, optional (apply_rewrite)  *)
@@ -172,7 +176,10 @@ Example trans_eq_exercise : forall (n m o p : nat),
      (n + p) = m ->
      (n + p) = (minustwo o).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. apply trans_eq with (m).
+  - apply H0.
+  - apply H.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -220,7 +227,6 @@ Proof.
     hypotheses, replacing variables in the goal as it goes. In the
     present example, this amounts to adding a new hypothesis [H1 : n =
     m] and replacing [n] by [m] in the goal. *)
-
   inversion H.
   reflexivity.
 Qed.
@@ -249,7 +255,9 @@ Example inversion_ex3 : forall (X : Type) (x y z w : X) (l j : list X),
   x :: l = z :: j ->
   x = y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. inversion H0. inversion H. reflexivity.
+Qed. 
+
 (** [] *)
 
 (** When used on a hypothesis involving an equality between
@@ -313,7 +321,8 @@ Example inversion_ex6 : forall (X : Type)
   y :: l = z :: j ->
   x = z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. inversion H0. inversion H.
+Qed. 
 (** [] *)
 
 (** To summarize this discussion, suppose [H] is a hypothesis in the
@@ -381,9 +390,8 @@ Theorem silly3' : forall (n : nat),
   true = beq_nat (S (S n)) 7.
 Proof.
   intros n eq H.
-  symmetry in H. apply eq in H. symmetry in H.
-  apply H.  Qed.
-
+  symmetry in H. apply eq in H. symmetry in H. apply H.
+Qed.
 (** Forward reasoning starts from what is _given_ (premises,
     previously proven theorems) and iteratively draws conclusions from
     them until the goal is reached.  Backward reasoning starts from
@@ -404,8 +412,15 @@ Theorem plus_n_n_injective : forall n m,
      n = m.
 Proof.
   intros n. induction n as [| n'].
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  - intros m H. destruct m.
+    + reflexivity.
+    + inversion H.
+  - intros m H. destruct m.
+    + inversion H.
+    + rewrite <- plus_n_Sm in H. rewrite <- plus_n_Sm in H. inversion H.
+      apply IHn' in H1. rewrite H1. reflexivity.
+Qed.
+      (** [] *)
 
 (* ################################################################# *)
 (** * Varying the Induction Hypothesis *)
@@ -560,7 +575,15 @@ Proof.
 Theorem beq_nat_true : forall n m,
     beq_nat n m = true -> n = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n. induction n.
+  - intros m. destruct m.
+    + reflexivity.
+    + intros H. inversion H.
+  - intros m H. destruct m.
+    + inversion H.
+    + inversion H. apply IHn in H1.
+      rewrite H1. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (beq_nat_true_informal)  *)
@@ -688,7 +711,10 @@ Theorem nth_error_after_last: forall (n : nat) (X : Type) (l : list X),
      length l = n ->
      nth_error l n = None.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n X l. generalize dependent n. induction l.
+  - reflexivity.
+  - intros n H. simpl. rewrite <- H. simpl. apply IHl. reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -871,7 +897,11 @@ Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
   split l = (l1, l2) ->
   combine l1 l2 = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. induction l1.
+  - destruct l2.
+    + destruct l.
+      * reflexivity.
+  Abort.  
 (** [] *)
 
 (** However, [destruct]ing compound expressions requires a bit of
@@ -897,7 +927,8 @@ Proof.
   intros n eq. unfold sillyfun1 in eq.
   destruct (beq_nat n 3).
   (* stuck... *)
-Abort.
+Admitted.
+
 
 (** We get stuck at this point because the context does not
     contain enough information to prove the goal!  The problem is that
@@ -942,7 +973,18 @@ Theorem bool_fn_applied_thrice :
   forall (f : bool -> bool) (b : bool),
   f (f (f b)) = f b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. destruct b.
+  - destruct (f true) eqn:FT.
+    + rewrite FT. apply FT.
+    + destruct (f false) eqn:FF.
+      * apply FT.
+      * apply FF.
+  - destruct (f false) eqn:FF. 
+    + destruct (f true) eqn:FT.
+      * apply FT.
+      * apply FF.
+    + rewrite FF. apply FF.
+Qed. 
 (** [] *)
 
 (* ################################################################# *)
@@ -1015,7 +1057,9 @@ Proof.
 Theorem beq_nat_sym : forall (n m : nat),
   beq_nat n m = beq_nat m n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+Admitted.
+
+  
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced, optional (beq_nat_sym_informal)  *)

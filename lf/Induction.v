@@ -158,36 +158,23 @@ Proof.
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-induction n as [| n' IH].
-- reflexivity.
-- simpl. apply  IH.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-intros n m. induction n as [| n' IH].
-- simpl. reflexivity.
-- simpl. rewrite -> IH. reflexivity.
-Qed. 
+  (* FILL IN HERE *) Admitted.
 
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-intros n m. induction n as [| n' IH].
-- simpl. apply plus_n_O.
-- simpl. rewrite -> IH. apply plus_n_Sm.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
-intros n m p. induction n as [| n' H].
-- reflexivity.
-- simpl. rewrite -> H. reflexivity.
-Qed.
-
+  (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (** **** Exercise: 2 stars (double_plus)  *)
@@ -203,10 +190,7 @@ Fixpoint double (n:nat) :=
 
 Lemma double_plus : forall n, double n = n + n .
 Proof.
-intros n. induction n as [| n' H].
-- reflexivity.
-- simpl. rewrite -> H. rewrite -> plus_n_Sm. reflexivity.
-Qed. 
+  (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (evenb_S)  *)
@@ -220,7 +204,7 @@ Qed.
 Theorem evenb_S : forall n : nat,
   evenb (S n) = negb (evenb n).
 Proof.
-intros n. indution n as [|n' H].
+  (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (** **** Exercise: 1 star (destruct_induction)  *)
