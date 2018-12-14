@@ -1518,10 +1518,12 @@ Qed.
     contradiction.  But since we can't, it is safe to add [P \/ ~P] as
     an axiom. *)
 
+
 Theorem excluded_middle_irrefutable: forall (P:Prop),
   ~ ~ (P \/ ~ P).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold not. intros. apply H. right. intros. apply H. left. apply H0.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (not_exists_dist)  *)
@@ -1541,7 +1543,14 @@ Theorem not_exists_dist :
   forall (X:Type) (P : X -> Prop),
     ~ (exists x, ~ P x) -> (forall x, P x).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. assert ( P x \/ ~ P x).
+  - apply H.
+  - destruct H1.
+    + apply H1.
+    + assert (exists x : X, not (P x)).
+      * exists x. apply H1.
+      * apply H0 in H2. contradiction.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, optional (classical_axioms)  *)
@@ -1567,6 +1576,76 @@ Definition de_morgan_not_and_not := forall P Q:Prop,
 Definition implies_to_or := forall P Q:Prop,
   (P->Q) -> (~P\/Q).
 
-(* FILL IN HERE *)
-(** [] *)
 
+Lemma impl_inversion: forall P Q:Prop, (P -> Q) -> (~Q -> ~P).
+Proof.
+  unfold not. intros. apply H0. apply H. apply H1.
+Qed.
+
+Lemma impl1to2: excluded_middle -> peirce.
+Proof.
+  unfold excluded_middle. unfold peirce. unfold not. intros.
+  destruct (H P).
+  - apply H1.
+  - destruct (H Q).
+    + apply H0. intros. apply H1 in H3. contradiction.
+    + apply H0. intros. apply H1 in H3. contradiction.
+Qed.
+
+Lemma impl1to3: excluded_middle -> double_negation_elimination.
+Proof.
+  unfold excluded_middle. unfold double_negation_elimination. intros.
+  unfold not in H0. destruct (H P).
+  - apply H1.
+  - apply H0 in H1. contradiction.
+Qed.
+
+Lemma impl1to4: excluded_middle -> de_morgan_not_and_not.
+Proof.
+  unfold excluded_middle. unfold de_morgan_not_and_not. unfold not. intros.
+  destruct (H P).
+  - left. apply H1.
+  - destruct (H Q).
+    + right. apply H2.
+    + assert ((P->False) /\ (Q->False) <-> True).
+      * split.
+        -- reflexivity.
+        -- intros. split. apply H1. apply H2.
+      * rewrite H3 in H0. contradiction.
+Qed.
+
+Lemma impl1to5: excluded_middle -> implies_to_or.
+Proof.
+  unfold excluded_middle. unfold implies_to_or. unfold not.
+  intros. destruct (H P).
+  + right. apply H0. apply H1.
+  + left. apply H1.
+Qed.
+
+Lemma impl2to3: peirce -> double_negation_elimination.
+Proof.
+  unfold peirce. unfold double_negation_elimination. unfold not.
+  intros. apply H with (Q := False). intros. apply H0 in H1. contradiction.
+Qed.
+
+Lemma impl3to4: double_negation_elimination -> de_morgan_not_and_not.
+Proof.
+  unfold double_negation_elimination. unfold de_morgan_not_and_not. unfold not. intros.
+  apply H with (P := P \/ Q). intros. apply H0. split.
+  - intros. apply H1. left. apply H2.
+  - intros. apply H1. right. apply H2.
+Qed.
+
+Lemma impl4to5: de_morgan_not_and_not -> implies_to_or.
+Proof.
+  unfold de_morgan_not_and_not. unfold implies_to_or. unfold not. intros.
+  apply (H (P->False) Q). intros. destruct H1. apply H1. intros. apply H2 in H0.
+  - apply H0.
+  - apply H3.
+Qed.
+
+Lemma impl5to1: implies_to_or -> excluded_middle.
+Proof.
+  unfold excluded_middle. unfold implies_to_or. unfold not. intros.
+  apply or_commut. apply (H P P). intros. apply H0.
+Qed.

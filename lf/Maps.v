@@ -215,7 +215,8 @@ Proof. reflexivity. Qed.
 
 Lemma t_apply_empty:  forall (A:Type) (x: string) (v: A), { --> v } x = v.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (t_update_eq)  *)
@@ -226,7 +227,8 @@ Proof.
 Lemma t_update_eq : forall A (m: total_map A) x v,
   (m & {x --> v}) x = v.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. unfold total_map in m. unfold t_update. rewrite <- beq_string_refl. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (t_update_neq)  *)
@@ -239,7 +241,11 @@ Theorem t_update_neq : forall (X:Type) v x1 x2
   x1 <> x2 ->
   (m & {x1 --> v}) x2 = m x2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. unfold t_update. rewrite false_beq_string.
+    - reflexivity.
+    - apply H.
+    Qed.
+  
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (t_update_shadow)  *)
@@ -252,7 +258,10 @@ Proof.
 Lemma t_update_shadow : forall A (m: total_map A) v1 v2 x,
     m & {x --> v1 ; x --> v2} = m & {x --> v2}.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. unfold t_update. apply functional_extensionality.  intros.
+  destruct (beq_string x x0); reflexivity.
+Qed.
+
 (** [] *)
 
 (** For the final two lemmas about total maps, it's convenient to use
@@ -266,7 +275,10 @@ Proof.
 
 Lemma beq_stringP : forall x y, reflect (x = y) (beq_string x y).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. apply iff_reflect.
+Admitted.
+
+
 (** [] *)
 
 (** Now, given [string]s [x1] and [x2], we can use the [destruct (beq_stringP
@@ -283,7 +295,9 @@ Proof.
 Theorem t_update_same : forall X x (m : total_map X),
     m & { x --> m x } = m.
   Proof.
-  (* FILL IN HERE *) Admitted.
+Admitted.
+
+    
 (** [] *)
 
 (** **** Exercise: 3 stars, recommended (t_update_permute)  *)
@@ -297,7 +311,15 @@ Theorem t_update_permute : forall (X:Type) v1 v2 x1 x2
   m & { x2 --> v2 ; x1 --> v1 }
   =  m & { x1 --> v1 ; x2 --> v2 }.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. unfold t_update. apply functional_extensionality.
+  intros. destruct (beq_stringP x1 x).
+  - destruct (beq_stringP x2 x).
+    + subst. destruct H. reflexivity.
+    + reflexivity.
+  - reflexivity.
+Qed.
+    
+      
 (** [] *)
 
 (* ################################################################# *)

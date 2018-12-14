@@ -175,10 +175,10 @@ Print ev_4'''.
 
 Theorem ev_8 : ev 8.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply ev_SS. apply ev_SS. apply ev_SS. apply ev_SS. apply ev_0.
+Qed.
 
-Definition ev_8' : ev 8 
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition ev_8' : ev 8 := ev_SS 6 (ev_SS 4 ev_4).
 (** [] *)
 
 (* ################################################################# *)
@@ -213,7 +213,7 @@ Qed.
     Here it is: *)
 
 Definition ev_plus4' : forall n, ev n -> ev (4 + n) :=
-  fun (n : nat) => fun (H : ev n) =>
+  fun (n : nat) (H : ev n) =>
     ev_SS (S (S n)) (ev_SS n H).
 
 (** Recall that [fun n => blah] means "the function that, given [n],
@@ -378,11 +378,19 @@ Definition and_comm' P Q : P /\ Q <-> Q /\ P :=
 (** **** Exercise: 2 stars, optional (conj_fact)  *)
 (** Construct a proof object demonstrating the following proposition. *)
 
-Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R 
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R :=
+  fun P Q R HPQ HQR =>
+  match HPQ with
+  | conj HP HQ => match HQR with
+    | conj HQ HR => conj HP HR end
+  end.
 (** [] *)
 
-
+(* Definition plus : nat -> nat -> nat.
+Show Proof.
+intros n m. Show Proof. induction n. Show Proof.
+- Show Proof. apply m. Show Proof.
+- apply S. Show Proof. IHn. *)
 
 (** ** Disjunction
 
@@ -408,8 +416,11 @@ End Or.
 (** Try to write down an explicit proof object for [or_commut] (without
     using [Print] to peek at the ones we already defined!). *)
 
-Definition or_comm : forall P Q, P \/ Q -> Q \/ P 
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition or_comm : forall P Q, P \/ Q -> Q \/ P :=
+  fun P Q HPQ => match HPQ with
+  | or_introl HP => or_intror HP
+  | or_intror HQ => or_introl HQ
+  end.
 (** [] *)
 
 (** ** Existential Quantification
@@ -447,8 +458,8 @@ Definition some_nat_is_even : exists n, ev n :=
 (** **** Exercise: 2 stars, optional (ex_ev_Sn)  *)
 (** Complete the definition of the following proof object: *)
 
-Definition ex_ev_Sn : ex (fun n => ev (S n)) 
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition ex_ev_Sn : ex (fun n => ev (S n)) :=
+  ex_intro (fun n => ev (S n)) 1 (ev_SS 0 ev_0).
 (** [] *)
 
 (* ================================================================= *)
@@ -539,7 +550,8 @@ End MyEquality.
 Lemma equality__leibniz_equality : forall (X : Type) (x y: X),
   x = y -> forall P:X->Prop, P x -> P y.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros. subst. apply H0.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, optional (leibniz_equality__equality)  *)
@@ -549,7 +561,7 @@ Proof.
 Lemma leibniz_equality__equality : forall (X : Type) (x y: X),
   (forall P:X->Prop, P x -> P y) -> x = y.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros. apply H with (P := eq x). reflexivity.
 (** [] *)
 
 (* ================================================================= *)

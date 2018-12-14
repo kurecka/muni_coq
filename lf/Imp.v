@@ -313,7 +313,8 @@ Proof.
        the optimization applies) and rewrite with the
        induction hypothesis. *)
     + (* a1 = ANum n *) destruct n;
-      simpl; rewrite IHa2; reflexivity.   Qed.
+      simpl; rewrite IHa2; reflexivity.
+Qed.
 
 (** Coq experts often use this "[...; try... ]" idiom after a tactic
     like [induction] to take care of many similar cases all at once.
@@ -440,13 +441,24 @@ Qed.
     it is sound.  Use the tacticals we've just seen to make the proof
     as elegant as possible. *)
 
-Fixpoint optimize_0plus_b (b : bexp) : bexp
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint optimize_0plus_b (b : bexp) : bexp :=
+match b with
+| BTrue => BTrue
+| BFalse => BFalse
+| BEq a1 a2 => BEq (optimize_0plus a1) (optimize_0plus a2)
+| BLe a1 a2 => BLe (optimize_0plus a1) (optimize_0plus a2)
+| BNot (BNot a) => a
+| BNot b1 => BNot b1
+| BAnd BFalse b2 => BFalse
+| BAnd b1 b2 => BAnd b1 b2
+end.
 
 Theorem optimize_0plus_b_sound : forall b,
   beval (optimize_0plus_b b) = beval b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. induction b; try (simpl; reflexivity); try (simpl; repeat (rewrite optimize_0plus_sound); reflexivity).
+  - simpl. destruct b; try (simpl; reflexivity). 
+  Qed. 
 (** [] *)
 
 (** **** Exercise: 4 stars, optional (optimizer)  *)
@@ -749,13 +761,27 @@ Qed.
     [aevalR], and prove that it is equivalent to [beval].*)
 
 Inductive bevalR: bexp -> bool -> Prop :=
-(* FILL IN HERE *)
+| E_BTrue : bevalR (BTrue) true
+| E_BFalse : bevalR (BFalse) false
+| E_BEq : forall (e1 e2: aexp) (n1 n2 : nat),
+(aevalR e1 n1) -> (aevalR e2 n2) -> bevalR (BEq e1 e2) (beq_nat n1 n2)
+| E_BLe : forall (e1 e2: aexp) (n1 n2 : nat),
+(aevalR e1 n1) -> (aevalR e2 n2) -> bevalR (BLe e1 e2) (leb n1 n2)
+| E_BNot : forall (e1: bexp) (b1 : bool),
+(bevalR e1 b1) -> bevalR (BNot e1) (negb b1)
+| E_BAnd : forall (e1 e2: bexp) (b1 b2 : bool),
+(bevalR e1 b1) -> (bevalR e2 b2) -> bevalR (BAnd e1 e2) (andb b1 b2)
 .
+
+Search aeval.
 
 Lemma beval_iff_bevalR : forall b bv,
   bevalR b bv <-> beval b = bv.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  split.
+  - intros H. induction H; subst; simpl; try reflexivity; try apply aeval_iff_aevalR in H; try apply aeval_iff_aevalR in H0; subst; reflexivity.
+  - generalize dependent bv. induction b; simpl; intros; subst; constructor; try apply aeval_iff_aevalR; try apply IHb; try apply IHb1; try apply IHb2; try reflexivity.
+  Qed.
 (** [] *)
 
 End AExp.
@@ -1323,7 +1349,13 @@ Example ceval_example2:
   (X ::= 0;; Y ::= 1;; Z ::= 2) / { --> 0 } \\
   { X --> 0 ; Y --> 1 ; Z --> 2 }.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply E_Seq with {X --> 0}.
+  apply E_Ass. reflexivity.
+  apply E_Seq with {X --> 0; Y --> 1}.
+  apply E_Ass. reflexivity.
+  apply E_Ass. reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (pup_to_n)  *)
@@ -1332,14 +1364,37 @@ Proof.
    Prove that this program executes as intended for [X] = [2]
    (this is trickier than you might expect). *)
 
-Definition pup_to_n : com
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition pup_to_n : com :=
+  Y ::= 0;;
+  WHILE 1 <= X DO
+    Y ::= Y + X;;
+    X ::= X - 1 
+  END.
+
+Search(fact).
+
+Theorem fact_correct :
+  fact / { X --> 4}
 
 Theorem pup_to_2_ceval :
   pup_to_n / { X --> 2 }
      \\ { X --> 2 ; Y --> 0 ; Y --> 2 ; X --> 1 ; Y --> 3 ; X --> 0 }.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply E_Seq with { X --> 2 ; Y --> 0}.
+  apply E_Ass. reflexivity.
+  apply E_WhileTrue with { X --> 2 ; Y --> 0; Y --> 2 ; X --> 1}.
+  reflexivity.
+  apply E_Seq with { X --> 2 ; Y --> 0 ; Y --> 2 }.
+  apply E_Ass. reflexivity.
+  apply E_Ass. reflexivity.
+  apply E_WhileTrue with { X --> 2 ; Y --> 0; Y --> 2 ; X --> 1; Y --> 3 ; X --> 0 }.
+  reflexivity.
+  apply E_Seq with { X --> 2 ; Y --> 0; Y --> 2 ; X --> 1; Y --> 3 }.
+  apply E_Ass. reflexivity.
+  apply E_Ass. reflexivity.
+  apply E_WhileFalse. reflexivity.
+Qed.
+
 (** [] *)
 
 (* ================================================================= *)
@@ -1437,7 +1492,10 @@ Proof.
       contradictory (and so can be solved in one step with
       [inversion]). *)
 
-  (* FILL IN HERE *) Admitted.
+  induction contra; try simpl in Heqloopdef; try inversion Heqloopdef.
+  - subst. inversion H.
+  - subst. simpl in IHcontra2. apply IHcontra2. reflexivity.
+  Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars (no_whiles_eqv)  *)
@@ -1463,13 +1521,17 @@ Fixpoint no_whiles (c : com) : bool :=
     while loops.  Then prove its equivalence with [no_whiles]. *)
 
 Inductive no_whilesR: com -> Prop :=
- (* FILL IN HERE *)
+| D_skip : no_whilesR SKIP
+| D_ass : forall (x:string) (n:nat), no_whilesR ( x ::= n )
+| D_seq : forall a b, no_whilesR a -> no_whilesR b -> no_whilesR (a ;; b)
+| D_iff : forall a b c, no_whilesR b -> no_whilesR c -> no_whilesR (IFB a THEN b ELSE c FI)
 .
 
 Theorem no_whiles_eqv:
    forall c, no_whiles c = true <-> no_whilesR c.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. induction c; simpl; try split; try simpl; try intros; try apply D_skip; try apply D_ass; try apply D_seq; try apply D_iff; try reflexivity.
+    
 (** [] *)
 
 (** **** Exercise: 4 stars (no_whiles_terminating)  *)

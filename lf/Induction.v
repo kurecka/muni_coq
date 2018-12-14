@@ -169,7 +169,10 @@ Proof.
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. induction n.
+  - simpl. apply plus_n_O.
+  - simpl. rewrite IHn. apply (plus_n_Sm m n).
+Qed.
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.

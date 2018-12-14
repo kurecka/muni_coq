@@ -500,7 +500,7 @@ Proof.
     rewrite <- (plus_assoc n m p) in H0. rewrite plus_assoc in H0. apply (ev_ev__ev (n+n) (m+p)).
     + apply H0.
     + rewrite <- double_plus. apply ev_double.
-    Qed.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -782,7 +782,7 @@ Proof.
     + rewrite <- plus_n_Sm in IHR. inversion IHR. reflexivity.
     + rewrite plus_comm. apply IHR.
   - generalize dependent m. generalize dependent n. induction o.
-    + intros n m H. simpl. apply and_exercise in H. destruct H.
+    + intros n m H.  apply and_exercise in H. destruct H.
       rewrite H. rewrite H0. apply c1. 
     + intros n' m' H. inversion H. rewrite H. apply plus_a_b_Sc in H1.
       destruct H1.
@@ -864,6 +864,7 @@ Proof.
   intros. inversion H0.
   - apply sub_r. apply H.
   - apply sub_l. 
+  Abort.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_subsequence : option (prod nat string) := None.
@@ -1095,13 +1096,17 @@ Qed.
 Lemma empty_is_empty : forall T (s : list T),
   ~ (s =~ EmptySet).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold not. intros. inversion H.
+Qed.
 
 Lemma MUnion' : forall T (s : list T) (re1 re2 : @reg_exp T),
   s =~ re1 \/ s =~ re2 ->
   s =~ Union re1 re2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. destruct H.
+  - apply MUnionL. apply H.
+  - apply MUnionR. apply H.
+Qed.  
 
 (** The next lemma is stated in terms of the [fold] function from the
     [Poly] chapter: If [ss : list (list T)] represents a sequence of
@@ -1112,7 +1117,12 @@ Lemma MStar' : forall T (ss : list (list T)) (re : reg_exp),
   (forall s, In s ss -> s =~ re) ->
   fold app ss [] =~ Star re.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. induction ss.
+  - simpl. apply MStar0.
+  - simpl. simpl in H. apply MStarApp.
+    + apply H. left. reflexivity.
+    + apply IHss. intros. apply H. right. apply H0.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, optional (reg_exp_of_list_spec)  *)
@@ -1123,7 +1133,18 @@ Proof.
 Lemma reg_exp_of_list_spec : forall T (s1 s2 : list T),
   s1 =~ reg_exp_of_list s2 <-> s1 = s2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. generalize dependent s1. induction s2.
+  - split.
+    + simpl. intros. inversion H. reflexivity.
+    + intros. rewrite H. apply MEmpty.
+  - split.
+    + intros. destruct s1.
+      * simpl in H. inversion H. inversion H3. simpl. f_equal. apply IHs2. apply H4.
+      * simpl in H. inversion H. inversion H3. simpl. f_equal. apply IHs2. apply H4.
+    + intros. destruct s1.
+      * simpl in H. inversion H.
+      * simpl in H. inversion H. simpl. subst.
+Abort.
 (** [] *)
 
 (** Since the definition of [exp_match] has a recursive
@@ -1349,7 +1370,23 @@ Lemma MStar'' : forall T (s : list T) (re : reg_exp),
     s = fold app ss []
     /\ forall s', In s' ss -> s' =~ re.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. remember (Star re).  induction H.
+  - inversion Heqr.
+  - inversion Heqr.
+  - inversion Heqr.
+  - inversion Heqr.
+  - inversion Heqr.
+  - exists []. split.
+    + simpl. reflexivity.
+    + simpl. intros. contradiction.
+  - inversion Heqr. subst. apply IHexp_match2 in Heqr. destruct Heqr. destruct H1.
+    exists (s1::x). split.
+    + simpl. rewrite H1. reflexivity.
+    + intros. simpl in H3. destruct H3.
+      * subst. apply H.
+      * subst.
+Admitted. 
+
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced (pumping)  *)
@@ -2143,5 +2180,3 @@ Theorem regex_refl : matches_regex regex_match.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
-
-
